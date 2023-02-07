@@ -62,11 +62,7 @@ Dans chaque paire, les 2 génomes sont une fois Query et une fois Ref, il y a do
 ## Heatmap
 
 ```{r}
-heatmap.2(as.matrix(df))
-```
-
-```{r}
-pheatmap(as.matrix(df))
+pheatmap(as.matrix(df_ANI))
 ```
 
 G07_MAG_00071 semble avoir une composition en nt similaire à ~86% avec les 20 génomes et l'autre MAG tandis que les autres sont globalement similaires à plus de 96%. Cet écart semble indiquer que 00071 est éloignée de l'espèce *P.temperata*.
@@ -170,6 +166,47 @@ Même proposition pour G07_MAG_00061 que pour la heatmap précédente (% fragmen
 write.xlsx(df44, '/Users/33640/OneDrive/Bureau/FAC/M1/Stage', colNames =TRUE, rowNames = TRUE)
 ```
 
+
+# Visualisation des caractéristiques des 68 génomes d'après les résultats de Checkm et GTDBTK :
+
+```{r}
+df_plot <- read.table("Résultats gtdb checkm binning - propre 2 (1).tsv", sep = "\t",header = TRUE)
+df_plot2 <- df_plot[-c(1,2),]
+```
+
+Supression des deux premières lignes car MAGs classé dans autres genres que *Planktomarina*. Reste donc 66 génomes.
+
+## Plot du GC% par espèce de *Planktomarina* 
+```{r}
+GC_plot <- ggplot(data = df_plot2) + geom_boxplot(mapping = aes(x=Classification, y=GC.content...., color = Classification))
+GC_plot + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="GC content (%)", x="Species") + ggtitle("GC content per species of Planktomarina") + geom_jitter(mapping = aes(Classification, y=GC.content...., colour = Classification))
+
+```
+
+## Plot de la tailles du génome par espèce 
+```{r}
+size_plot <- ggplot(data = df_plot2) + geom_boxplot(mapping = aes(x=Classification, y=Genome.size..bp., color = Classification))
+size_plot + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="Size (bp)", x="Species") + ggtitle("Genome size per specie of Planktomarina") #+ geom_jitter(mapping = aes(Name, y=Completeness...., colour = Name))
+
+```
+
+```{r}
+size_GC_plot <- ggplot(data = df_plot2) + geom_boxplot(mapping = aes(x=GC.content...., y=Genome.size..bp., color = Classification)) + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="Size (bp)", x="GC content (%)") + ggtitle("Genome size and GC content per specie of Planktomarina")
+print(size_GC_plot)
+```
+
+
+## PLot du rapport entre la taille du génome et la complétion 
+```{r}
+size_comp_plot <- ggplot(data = df_plot2) + geom_jitter(mapping = aes(x=Completeness...., y=Genome.size..bp., color = Classification)) + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="Size (bp)", x="Completeness (%)") + ggtitle("Genome size and completeness per specie of Planktomarina") + geom_smooth(mapping = aes(x=Completeness...., y=Genome.size..bp.))
+print(size_comp_plot)
+```
+
+```{r}
+#size_GC_plot2 <- ggplot(data = df_plot2) + geom_jitter(mapping = aes(x=GC.content...., y=Genome.size..bp., color = Classification)) + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="Size (bp)", x="GC content (%)") + ggtitle("Genome size and GC content per specie of Planktomarina") + geom_smooth(mapping = aes(x=GC.content...., y=Genome.size..bp.))
+#print(size_GC_plot2)
+```
+
 # Visualisation des modules KEGGs au sein des génomes 
 
 ```{r}
@@ -204,34 +241,7 @@ modules_ordered <- modules[taxo_ordered$name]
 pheatmap(as.matrix(modules_ordered), cluster_rows = TRUE, cluster_cols = FALSE)
 ```
 
-# Visualisation des caractéristiques des 68 génomes d'après les résultats de Checkm et GTDBTK :
-
-```{r}
-df_plot <- read.table("Résultats gtdb checkm binning - propre 2 (1).tsv", sep = "\t",header = TRUE)
-df_plot2 <- df_plot[-c(1,2),]
-```
-
-Supression des deux premières lignes car MAGs classé dans autres genres que *Planktomarina*. Reste donc 66 génomes.
-
-## Plot du GC% par espèce de *Planktomarina* 
-```{r}
-GC_plot <- ggplot(data = df_plot2) + geom_boxplot(mapping = aes(x=Classification, y=GC.content...., color = Classification))
-GC_plot + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="GC content (%)", x="Species") + ggtitle("GC content per species of Planktomarina") + geom_jitter(mapping = aes(Classification, y=GC.content...., colour = Classification))
-
-```
-
-## Plot de la tailles du génome par espèce 
-```{r}
-size_plot <- ggplot(data = df_plot2) + geom_boxplot(mapping = aes(x=Classification, y=Genome.size..bp., color = Classification))
-size_plot + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="Size (bp)", x="Species") + ggtitle("Genome size per specie of Planktomarina") #+ geom_jitter(mapping = aes(Name, y=Completeness...., colour = Name))
-
-```
-
-## PLot du rapport entre la taille du génome et la complétion 
-```{r}
-size_comp_plot <- ggplot(data = df_plot2) + geom_jitter(mapping = aes(x=Completeness...., y=Genome.size..bp., color = Classification)) + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="Size (bp)", x="Completeness (%)") + ggtitle("Genome size and completeness per specie of Planktomarina") + geom_line(alpha = 0.5)
-print(size_comp_plot)
-```
+# Fonctions du CORE génome 
 
 ```{r}
 data2 <-read.table("Planktomarina_Pan_gene_clusters_summary.txt", sep = "\t", header = TRUE, quote="\"")
