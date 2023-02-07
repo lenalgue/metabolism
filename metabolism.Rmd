@@ -1,0 +1,81 @@
+---
+title: "metabolism"
+author: "Léna AILLIOT"
+date: "2023-01-30"
+output: pdf_document
+---
+
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+```
+```{r}
+#library("PANEV")
+library("devtools")
+#library("gage")
+library("pathview")
+```
+```{r}
+#install.packages("xfun")
+#install.packages(c("gplots", "pheatmap"))
+```
+
+```{r}
+library (gplots)
+library (pheatmap)
+```
+
+```{r}
+df <- read.table("kegg-metabolism_modules.txt", sep = "\t", header = TRUE)
+```
+
+```{r}
+taxo <- read.table("gtdbtk_68.tsv", sep = "\t", header = TRUE)
+taxo$classification[taxo$classification == ""] <- "Planktomarina"
+```
+
+
+```{r}
+data2 <-read.table("Planktomarina_Pan_gene_clusters_summary.txt", sep = "\t", header = TRUE, quote="\"")
+```
+
+```{r}
+taxo_ordered <- taxo[order(taxo$classification),]
+```
+
+
+```{r}
+genome <- data.frame(df[ ,3])
+colnames(genome) <- "Genome"
+```
+
+```{r}
+modules <- data.frame()
+for (genome in unique(df[ ,3])){
+  for (m in unique(df[ ,4])){
+    if (nrow(df[df$kegg_module == m & df$db_name == genome,]) == 1) {modules[m,genome] <- df[df$kegg_module == m & df$db_name == genome, 10]}
+    else {modules[m,genome] <- 0}
+  }
+}
+```
+
+```{r}
+modules_ordered <- modules[taxo_ordered$name]
+```
+
+
+```{r}
+pheatmap(as.matrix(modules_ordered), cluster_rows = TRUE, cluster_cols = FALSE)
+```
+
+```{r}
+df_plot <- read.table("Résultats gtdb checkm binning - propre 2 (1).tsv", sep = "\t",header = TRUE)
+df_plot2 <- df_plot[-1,]
+```
+
+```{r}
+GC_plot <- ggplot(data = df_plot2) + geom_boxplot(mapping = aes(x=Classification, y=GC.content...., color = Classification))
+GC_plot + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + labs(y="GC content (%)", x="Classification") + ggtitle("GC content per species of Planktomarina")
+```
+
+
